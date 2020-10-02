@@ -1,0 +1,100 @@
+import mysql from "mysql";
+import nodemailer from "nodemailer";
+import moment from "moment";
+import { RegisterNow } from "../../models/ModelDeclare";
+import { tableNames } from "../database-constant";
+import { emailConstant } from "../../constants";
+const mySQLConfig = require("../dbconfig.json");
+
+export function insertNewRegisterApplication(newRegister: RegisterNow): Promise<any> {
+  try {
+    const connection = mysql.createConnection(mySQLConfig);
+    connection.connect();
+
+    /** Use UTC as created date */
+    newRegister.createdDate = moment().utc().format();
+
+    return new Promise((resolve, reject) => {
+      const res = connection.query(`INSERT INTO ${tableNames.REGISTER_NOW} SET ?`, newRegister, (error) => {
+        connection.end();
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        /**
+         * if send email to the host is failed
+         * then set the "sent" status of that record is 0 (it means haven't sent yet)
+         **/
+        try {
+          sendRegisterInfoToHostEmail(newRegister);
+        } catch (err) {
+          updateSentEmailStatus(newRegister, 0);
+        }
+
+        resolve(res.values);
+      });
+    });
+  } catch (err) {
+    throw err;
+  }
+}
+
+export function updateSentEmailStatus(newRegister: RegisterNow, status: number): Promise<any> {
+  try {
+    const connection = mysql.createConnection(mySQLConfig);
+    connection.connect();
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `UPDATE ${tableNames.REGISTER_NOW} SET sent = ? WHERE phoneNumber = ? and email = ?`,
+        [status, newRegister.phoneNumber, newRegister.email],
+        (error) => {
+          connection.end();
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(true);
+        }
+      );
+    });
+  } catch (err) {
+    throw err;
+  }
+}
+
+export function sendRegisterInfoToHostEmail(newRegister: RegisterNow) {
+  try {
+    const { phoneNumber, name, email } = newRegister;
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: emailConstant.HOST_EMAIL,
+        pass: emailConstant.HOST_EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      to: emailConstant.EMAIL_RECEIVERS,
+      subject: `${emailConstant.EMAIL_SUBJECT} (${moment().format("MMMM Do YYYY, h:mm:ss a")})`,
+      html: `
+      <h1>New user register</h1>
+      <p>NAME: ${name}</p>
+      <p>EMAIL: ${email}</p>
+      <p>PHONE: ${phoneNumber}</p>
+      <p>-----------------------</p>
+      `,
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        throw error;
+      } else {
+        console.log("Email sent: " + info.response);
+        updateSentEmailStatus(newRegister, 1);
+      }
+    });
+  } catch (err) {
+    throw err;
+  }
+}
