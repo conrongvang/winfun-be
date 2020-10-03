@@ -2,6 +2,7 @@ import express, { Response, Request } from "express";
 import mysql from "mysql";
 import { RegisterNowAPIs } from './apis/register-now'
 import { EventAPIs } from './apis/events'
+import { UpdateAPIs } from './apis/upload-download'
 const server = express();
 const mySQLConfig = require('./db/dbconfig.json');
 
@@ -30,7 +31,7 @@ const connection = mysql.createConnection(mySQLConfig);
 
 connection.on("connect", () => {
 	console.log("We are connected to the DB");
-	server.use('/', [RegisterNowAPIs, EventAPIs]);
+	server.use('/', [RegisterNowAPIs, EventAPIs, UpdateAPIs]);
 	server.listen(5000, function () {
 	  console.log("listening on *:5000");
 	});

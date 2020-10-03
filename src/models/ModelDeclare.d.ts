@@ -9,6 +9,7 @@ export declare interface RegisterNow {
 
 export declare interface WinfunEvent {
     id?: number
+    eventName: string,
     createdDate?: string
     location: string
     beginDatetime: string
@@ -17,4 +18,5 @@ export declare interface WinfunEvent {
     detailLink: string
     show?: number
     sequence?: number
+    imageURI?: string
 }
