@@ -1,7 +1,4 @@
 const multer = require("multer");
-const sharp = require("sharp");
-import { v4 as uuidv4 } from "uuid";
-const path = require("path");
 
 const storage = multer.diskStorage({
   destination: (_req: any, _file: any, cb: any) => {
@@ -19,34 +16,3 @@ export const uploadImage = multer({
     fileSize: 4 * 1024 * 1024,
   },
 });
-
-export class Resize {
-  folder = null;
-  constructor(folder: any) {
-    this.folder = folder;
-  }
-
-  async save(buffer: any) {
-    const filename = Resize.filename();
-    const filepath = this.filepath(filename);
-
-    await sharp(buffer)
-      .resize(300, 300, {
-        // size image 300x300
-        fit: sharp.fit.inside,
-        withoutEnlargement: true,
-      })
-      .toFile(filepath);
-
-    return filename;
-  }
-
-  static filename() {
-    // random file name
-    return `${uuidv4()}.png`;
-  }
-
-  filepath(filename: any) {
-    return path.resolve(`${this.folder}/${filename}`);
-  }
-}
