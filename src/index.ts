@@ -30,14 +30,16 @@ server.use(function (_: Request, res: Response, next: any) {
 const connection = mysql.createConnection(mySQLConfig);
 
 connection.on("connect", () => {
-	console.log("We are connected to the DB");
-	server.use('/', [RegisterNowAPIs, EventAPIs, UpdateAPIs]);
-	server.listen(5000, function () {
-	  console.log("listening on *:5000");
-	});
+	// console.log("We are connected to the DB");
 });
 
 connection.connect();
+
+server.use('/', [RegisterNowAPIs, EventAPIs, UpdateAPIs]);
+server.listen(5000, function () {
+  console.log("listening on *:5000");
+});
+
 connection.end();
 
 export const dbConnection = connection

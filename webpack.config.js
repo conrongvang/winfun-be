@@ -27,6 +27,9 @@ module.exports = {
 			}
 		]
 	},
+	optimization: {
+		minimize: false
+	},
 
 	// I used the onBuildEnd option of the webpack-shell-plugin because it only runs the specified command(s)
 	// after the first build. On subsequent builds, nodemon will automatically restart the app.
