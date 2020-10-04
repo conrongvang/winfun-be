@@ -16,3 +16,15 @@ export const uploadImage = multer({
     fileSize: 4 * 1024 * 1024,
   },
 });
+
+export function preparedData(data: any){
+  if(!data){
+    return null
+  }
+
+  if(typeof data == 'string'){
+    return `'${data}'`
+  }
+
+  return data
+}
