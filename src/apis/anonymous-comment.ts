@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.post('/register_now', async (req: Request, res: Response) => {
     try{
-        res.status(200).json({code: 0});
+        res.status(200).json({code: 0, data: req});
     }
     catch(err){
         res.status(200).json({code: 1, message: err});
