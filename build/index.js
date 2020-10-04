@@ -78842,10 +78842,13 @@ router.post("/upload_image", utils_1.uploadImage.single("image"), function (req,
     });
 });
 router.get("/image/:imageName", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var imageName;
+    var imageName, imagePath;
     return __generator(this, function (_a) {
         try {
             imageName = req.params.imageName;
+            imagePath = path_1.default.resolve("./storage/images/" + imageName);
+            if (!fs_1.default.existsSync(imagePath))
+                return [2 /*return*/, res.end()];
             fs_1.default.readFile(path_1.default.resolve("./storage/images/" + imageName), function (err, data) {
                 if (err)
                     throw err; // Fail if the file can't be read.

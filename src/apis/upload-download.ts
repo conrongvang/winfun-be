@@ -22,6 +22,8 @@ router.post("/upload_image", uploadImage.single("image"), async function (req: R
 router.get("/image/:imageName", async (req: Request, res: Response) => {
   try {
     const imageName = req.params.imageName;
+    const imagePath = path.resolve("./storage/images/" + imageName)
+    if(!fs.existsSync(imagePath)) return res.end()
     fs.readFile(path.resolve("./storage/images/" + imageName), function (err, data) {
       if (err) throw err; // Fail if the file can't be read.
       res.writeHead(200, { "Content-Type": "image/jpeg" })
