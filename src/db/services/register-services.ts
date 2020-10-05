@@ -15,8 +15,7 @@ export function insertNewRegisterApplication(newRegister: RegisterNow): Promise<
     newRegister.createdDate = moment().utc().format();
 
     return new Promise((resolve, reject) => {
-      const res = connection.query(`INSERT INTO ${tableNames.REGISTER_NOW} SET ?`, newRegister, 
-      (error, result) => {
+      const res = connection.query(`INSERT INTO ${tableNames.REGISTER_NOW} SET ?`, newRegister, (error, result) => {
         connection.end();
         if (error) {
           reject(error);
@@ -33,7 +32,7 @@ export function insertNewRegisterApplication(newRegister: RegisterNow): Promise<
           updateSentEmailStatus(newRegister, 0);
         }
 
-        resolve({...res.values, id: result.insertId});
+        resolve({ ...res.values, id: result.insertId });
       });
     });
   } catch (err) {
@@ -64,7 +63,7 @@ export function updateSentEmailStatus(newRegister: RegisterNow, status: number):
   }
 }
 
-export function sendRegisterInfoToHostEmail(newRegister: RegisterNow) {
+export function sendRegisterInfoToHostEmail(newRegister: RegisterNow, resend: boolean = false) {
   try {
     const { phoneNumber, name, email } = newRegister;
     const transporter = nodemailer.createTransport({
@@ -77,7 +76,9 @@ export function sendRegisterInfoToHostEmail(newRegister: RegisterNow) {
 
     const mailOptions = {
       to: emailConstant.EMAIL_RECEIVERS,
-      subject: `${emailConstant.EMAIL_SUBJECT} (${moment().format("MMMM Do YYYY, h:mm:ss a")})`,
+      subject: `${resend ? "Re-send:" : ""}${emailConstant.EMAIL_SUBJECT} (${moment().format(
+        "Do MMMM YYYY, h:mm:ss a"
+      )})`,
       html: `
       <h1>New user register</h1>
       <p>NAME: ${name}</p>
@@ -94,6 +95,51 @@ export function sendRegisterInfoToHostEmail(newRegister: RegisterNow) {
         console.log("Email sent: " + info.response);
         updateSentEmailStatus(newRegister, 1);
       }
+    });
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function resendRegisterInfoToHostEmail(registerId: number) {
+  try {
+    const connection = mysql.createConnection(mySQLConfig);
+    connection.connect();
+    const data : RegisterNow = await new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM ${tableNames.REGISTER_NOW} WHERE id = ${registerId} LIMIT 1`,
+        (error, result) => {
+          connection.end();
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(result[0]);
+        }
+      );
+    });
+
+    sendRegisterInfoToHostEmail(data, true)
+  } catch (err) {
+    throw err;
+  }
+}
+
+export function fetchAllRegisterNow(): Promise<any> {
+  try {
+    const connection = mysql.createConnection(mySQLConfig);
+    connection.connect();
+
+    return new Promise((resolve, reject) => {
+      connection.query(`SELECT * FROM ${tableNames.REGISTER_NOW}`, (error, result) => {
+        connection.end();
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(result);
+      });
     });
   } catch (err) {
     throw err;
