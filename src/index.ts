@@ -3,6 +3,7 @@ import mysql from "mysql";
 import { RegisterNowAPIs } from './apis/register-now'
 import { EventAPIs } from './apis/events'
 import { UpdateAPIs } from './apis/upload-download'
+import { AnonymousCommentAPIs } from "./apis/anonymous-comment";
 const server = express();
 const mySQLConfig = require('./db/dbconfig.json');
 
@@ -35,7 +36,7 @@ connection.on("connect", () => {
 
 connection.connect();
 
-server.use('/', [RegisterNowAPIs, EventAPIs, UpdateAPIs]);
+server.use('/', [RegisterNowAPIs, EventAPIs, UpdateAPIs, AnonymousCommentAPIs]);
 server.listen(5000, function () {
   console.log("listening on *:5000");
 });

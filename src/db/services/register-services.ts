@@ -15,7 +15,8 @@ export function insertNewRegisterApplication(newRegister: RegisterNow): Promise<
     newRegister.createdDate = moment().utc().format();
 
     return new Promise((resolve, reject) => {
-      const res = connection.query(`INSERT INTO ${tableNames.REGISTER_NOW} SET ?`, newRegister, (error) => {
+      const res = connection.query(`INSERT INTO ${tableNames.REGISTER_NOW} SET ?`, newRegister, 
+      (error, result) => {
         connection.end();
         if (error) {
           reject(error);
@@ -32,7 +33,7 @@ export function insertNewRegisterApplication(newRegister: RegisterNow): Promise<
           updateSentEmailStatus(newRegister, 0);
         }
 
-        resolve(res.values);
+        resolve({...res.values, id: result.insertId});
       });
     });
   } catch (err) {
