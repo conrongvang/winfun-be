@@ -1,4 +1,6 @@
 const multer = require("multer");
+import fs from 'fs'
+import path from 'path'
 
 const storage = multer.diskStorage({
   destination: (_req: any, _file: any, cb: any) => {
@@ -17,6 +19,10 @@ export const uploadImage = multer({
   },
 });
 
+/**
+ * Format data before add into sql query
+ * @param data: data with passed into the query
+ */
 export function preparedData(data: any){
   if(!data){
     return null
@@ -27,4 +33,19 @@ export function preparedData(data: any){
   }
 
   return data
+}
+
+export function writeIntoJSONFile(filePath: string, jsObject: object){
+  try{
+    const emailConfigPath = path.resolve("./src/emailConfig.json")
+    const oldContent = JSON.parse(fs.readFileSync(emailConfigPath, 'utf8'));
+    const mergedContent = {...oldContent, ...jsObject}
+    const JSONString = JSON.stringify(mergedContent, null, 2)
+    fs.writeFileSync(filePath, JSONString)
+    
+    return JSONString
+  }
+  catch(err){
+    throw err
+  }
 }

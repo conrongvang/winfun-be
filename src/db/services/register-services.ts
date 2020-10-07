@@ -1,9 +1,10 @@
 import mysql from "mysql";
 import nodemailer from "nodemailer";
 import moment from "moment";
+import path from 'path'
+import fs from 'fs'
 import { RegisterNow } from "../../models/ModelDeclare";
 import { tableNames } from "../database-constant";
-import { emailConstant } from "../../constants";
 const mySQLConfig = require("../dbconfig.json");
 
 export function insertNewRegisterApplication(newRegister: RegisterNow): Promise<any> {
@@ -66,17 +67,19 @@ export function updateSentEmailStatus(newRegister: RegisterNow, status: number):
 export function sendRegisterInfoToHostEmail(newRegister: RegisterNow, resend: boolean = false) {
   try {
     const { phoneNumber, name, email } = newRegister;
+    const emailConfigPath = path.resolve("./src/emailConfig.json")
+    var emailConfig = JSON.parse(fs.readFileSync(emailConfigPath, 'utf8'));
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: emailConstant.HOST_EMAIL,
-        pass: emailConstant.HOST_EMAIL_PASSWORD,
+        user: emailConfig.hostEmail,
+        pass: emailConfig.hostEmailPassword,
       },
     });
 
     const mailOptions = {
-      to: emailConstant.EMAIL_RECEIVERS,
-      subject: `${resend ? "Re-send:" : ""}${emailConstant.EMAIL_SUBJECT} (${moment().format(
+      to: emailConfig.receiveEmails,
+      subject: `${resend ? "Re-send:" : ""}${emailConfig.emailSubject} (${moment().format(
         "Do MMMM YYYY, h:mm:ss a"
       )})`,
       html: `
@@ -105,6 +108,7 @@ export async function resendRegisterInfoToHostEmail(registerId: number) {
   try {
     const connection = mysql.createConnection(mySQLConfig);
     connection.connect();
+    let register : RegisterNow = {} as RegisterNow
     const data : RegisterNow = await new Promise((resolve, reject) => {
       connection.query(
         `SELECT * FROM ${tableNames.REGISTER_NOW} WHERE id = ${registerId} LIMIT 1`,
@@ -114,12 +118,15 @@ export async function resendRegisterInfoToHostEmail(registerId: number) {
             reject(error);
             return;
           }
+          
+          register = result[0]
           resolve(result[0]);
         }
       );
     });
 
     sendRegisterInfoToHostEmail(data, true)
+    updateSentEmailStatus(register, 1);
   } catch (err) {
     throw err;
   }
