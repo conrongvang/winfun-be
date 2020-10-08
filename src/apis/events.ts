@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { fetchAllEvent, insertEvent, updateEvent, fetchEventById } from "../db/services/event-sevices";
+import { fetchAllEvent, insertEvent, updateEvent, fetchEventById, deleteEvent } from "../db/services/event-sevices";
 import { WinfunEvent } from "../models/ModelDeclare";
 import moment from "moment";
 
@@ -86,6 +86,18 @@ router.get("/get_event_by_id", async (req: Request, res: Response) => {
     const { eventId } = req.query;
     if (typeof eventId == "string") {
       const data = await fetchEventById(Number(eventId));
+      res.status(200).json({ code: 0, data: data });
+    }
+  } catch (err) {
+    res.status(200).json({ code: 1, message: err });
+  }
+});
+
+router.put("/delete_event", async (req: Request, res: Response) => {
+  try {
+    const { eventId } = req.query;
+    if (typeof eventId == "string") {
+      const data = await deleteEvent(Number(eventId));
       res.status(200).json({ code: 0, data: data });
     }
   } catch (err) {
