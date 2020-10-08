@@ -5,6 +5,7 @@ import { EventAPIs } from './apis/events'
 import { UpdateAPIs } from './apis/upload-download'
 import { AnonymousCommentAPIs } from "./apis/anonymous-comment";
 import { EmailInfoAPIs } from "./apis/email-info";
+import { FeaturesAPIs } from './apis/features'
 const server = express();
 const mySQLConfig = require('./db/dbconfig.json');
 
@@ -37,7 +38,7 @@ connection.on("connect", () => {
 
 connection.connect();
 
-server.use('/', [RegisterNowAPIs, EventAPIs, UpdateAPIs, AnonymousCommentAPIs, EmailInfoAPIs]);
+server.use('/', [RegisterNowAPIs, EventAPIs, UpdateAPIs, AnonymousCommentAPIs, EmailInfoAPIs, FeaturesAPIs]);
 server.listen(5000, function () {
   console.log("listening on *:5000");
 });

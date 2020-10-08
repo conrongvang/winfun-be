@@ -32,3 +32,13 @@ export declare interface AnonymousComment {
   createdDate?: string;
   show?: number
 }
+
+export declare interface Feature {
+  id ?: number
+  title: string
+  image?: string
+  descriptions: string
+  createdDate?: string
+  show?: number
+  sequence?: number
+}
