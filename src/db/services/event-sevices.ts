@@ -142,20 +142,20 @@ export function deleteEvent(eventId: number): Promise<any> {
   }
 }
 
-export function fetchEventDelete(eventId: number): Promise<any> {
+export function fetchAllExistsEvent(): Promise<any> {
   try {
     const connection = mysql.createConnection(mySQLConfig);
     connection.connect();
 
     return new Promise((resolve, reject) => {
-      connection.query(`SELECT * FROM ${tableNames.EVENTS} WHERE id = ${eventId} LIMIT 1`, (error, result) => {
+      connection.query(`SELECT * FROM ${tableNames.EVENTS} WHERE deleted != 1`, (error, result) => {
         connection.end();
         if (error) {
           reject(error);
           return;
         }
 
-        resolve(result[0]);
+        resolve(result);
       });
     });
   } catch (err) {
